@@ -60,6 +60,7 @@ Each solution includes complete working examples, configuration details, and exp
 ## Documentation
 
 - **[Beginner's Tutorial](./TUTORIAL_FOR_BEGINNERS.md)** - **📖 New to Claude Code Action? Start here!**
+- **[Codebase Guide](./CODEBASE_GUIDE.md)** - **🔧 For traditional developers (C/C++/Java) new to full-stack & AI**
 - **[Solutions Guide](./docs/solutions.md)** - **🎯 Ready-to-use automation patterns**
 - **[Migration Guide](./docs/migration-guide.md)** - **⭐ Upgrading from v0.x to v1.0**
 - [Setup Guide](./docs/setup.md) - Manual setup, custom GitHub apps, and security best practices
