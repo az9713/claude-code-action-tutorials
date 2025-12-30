@@ -1,5 +1,9 @@
 # Claude Code Action: A Beginner's Tutorial
 
+> **Source:** The Claude Code Action codebase is from [anthropics/claude-code-action](https://github.com/anthropics/claude-code-action).
+>
+> **About this tutorial:** This comprehensive beginner's guide was added to help developers understand how Claude Code Action, GitHub Actions, GitHub, and Claude Code CLI work together. It includes detailed workflow traces, practical examples, and guidance on when to use local vs remote Claude.
+
 This tutorial explains Claude Code Action for people with minimal GitHub and Claude experience. We'll start from the basics and build up to understanding how everything works together.
 
 ---

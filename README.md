@@ -2,6 +2,15 @@
 
 # Claude Code Action
 
+> **Source:** This codebase is derived from [anthropics/claude-code-action](https://github.com/anthropics/claude-code-action).
+>
+> **Added in this fork:** Comprehensive beginner tutorials explaining how Claude Code Action, GitHub Actions, GitHub, and Claude Code CLI work together. See [TUTORIAL_FOR_BEGINNERS.md](./TUTORIAL_FOR_BEGINNERS.md) for:
+> - How GitHub Actions and @mentions work
+> - Complete workflow traces showing all systems involved
+> - Using Claude Code Action from Claude Code CLI (with natural language examples)
+> - When to use local vs remote Claude
+> - Practical workflow examples for bug fixes, code reviews, documentation, and more
+
 A general-purpose [Claude Code](https://claude.ai/code) action for GitHub PRs and issues that can answer questions and implement code changes. This action intelligently detects when to activate based on your workflow context—whether responding to @claude mentions, issue assignments, or executing automation tasks with explicit prompts. It supports multiple authentication methods including Anthropic direct API, Amazon Bedrock, Google Vertex AI, and Microsoft Foundry.
 
 ## Features
@@ -50,6 +59,7 @@ Each solution includes complete working examples, configuration details, and exp
 
 ## Documentation
 
+- **[Beginner's Tutorial](./TUTORIAL_FOR_BEGINNERS.md)** - **📖 New to Claude Code Action? Start here!**
 - **[Solutions Guide](./docs/solutions.md)** - **🎯 Ready-to-use automation patterns**
 - **[Migration Guide](./docs/migration-guide.md)** - **⭐ Upgrading from v0.x to v1.0**
 - [Setup Guide](./docs/setup.md) - Manual setup, custom GitHub apps, and security best practices
