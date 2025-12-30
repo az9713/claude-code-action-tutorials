@@ -977,6 +977,98 @@ Before using this workflow, ensure you have:
 
 ---
 
+### Understanding the Sync Model: Local vs Remote Changes
+
+**Important:** When Claude Code Action makes changes on GitHub, it creates them on a **new branch**, not on your working branch. This means your local work and Claude's remote work are isolated until you choose to merge.
+
+```
+main ─────────────────────────────●─────────────── (after merge)
+                                 /
+claude/fix-login-bug ──────────●  (Claude's PR branch on GitHub)
+
+your-feature-branch ────●────●────●  (your local work - unaffected)
+```
+
+After Claude's PR is merged, you simply pull the changes:
+```bash
+git pull origin main
+git rebase main  # Update your branch with Claude's changes
+```
+
+---
+
+### When to Use Remote Claude Code Action vs Local Claude Code CLI
+
+Not every task benefits from remote execution. Here's when each approach shines:
+
+| Scenario | Local Claude Code CLI | Remote Claude Code Action |
+|----------|:---------------------:|:-------------------------:|
+| Working on the same code area | ✅ **Better** - stays in sync | ❌ Creates sync overhead |
+| Independent/unrelated task | Works, but blocks you | ✅ **Better** - parallel work |
+| Need team visibility on PR | Requires push + PR creation | ✅ **Better** - native GitHub flow |
+| Large refactoring across many files | ✅ **Better** - full local control | ⚠️ Risky for big changes |
+| Quick bug fix in different module | Either works | ✅ **Better** - delegate & continue |
+| You don't have local env set up | ❌ Not possible | ✅ **Only option** |
+| Overnight/async batch of issues | ❌ Requires your attention | ✅ **Better** - runs without you |
+| Rapid iteration with quick feedback | ✅ **Better** - faster loop | Slower due to GitHub overhead |
+
+### Advantages of Remote Claude Code Action
+
+1. **Parallel Development** - Work on feature A locally while Claude fixes bug B remotely. No blocking.
+
+2. **Delegation of Independent Tasks** - "Claude, fix these 5 unrelated issues while I focus on the critical feature."
+
+3. **Asynchronous Work** - Create issues before leaving for the day; Claude works while you're away.
+
+4. **Team Workflow Integration** - PRs appear on GitHub where teammates can review and comment.
+
+5. **No Local Setup Required** - Useful on a different machine or when the repo is large.
+
+6. **Immediate CI/CD** - Changes trigger GitHub Actions CI pipelines immediately.
+
+### When NOT to Use Remote Claude Code Action
+
+- **Same code area** - If you and Claude would both touch the same files, work locally to avoid merge conflicts
+- **Complex interdependent changes** - Keep it local for better control and faster iteration
+- **Rapid iteration** - Local is faster when you need quick feedback loops
+
+---
+
+### Recommended Workflow Pattern
+
+Here's how local and remote work fit together:
+
+```
+You (local)                          Claude Code Action (GitHub)
+    │                                        │
+    │  "Create issue for @claude to          │
+    │   fix the auth bug"                    │
+    │ ──────────────────────────────────────►│
+    │                                        │
+    │  Continue working on                   │  Claude creates branch
+    │  your feature locally                  │  claude/fix-auth-bug
+    │       │                                │       │
+    │       │                                │       │
+    │       ▼                                │       ▼
+    │  Commit your changes                   │  Claude opens PR #47
+    │                                        │
+    │  "Show me Claude's PRs"                │
+    │ ──────────────────────────────────────►│
+    │                                        │
+    │  Review PR #47                         │
+    │  "Merge PR #47"                        │
+    │ ──────────────────────────────────────►│
+    │                                        │  PR merged to main
+    │                                        │
+    │  git pull origin main                  │
+    │  (Now you have Claude's fix)           │
+    │                                        │
+    │  git rebase main                       │
+    │  (Your branch updated with fix)        │
+```
+
+---
+
 ### Example Workflow 1: Request a Remote Bug Fix
 
 **Scenario:** You're working locally and discover a bug in a different part of the codebase. Instead of fixing it yourself, you delegate it to Claude Code Action on GitHub.
