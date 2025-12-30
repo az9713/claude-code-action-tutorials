@@ -17,6 +17,7 @@ This tutorial explains Claude Code Action for people with minimal GitHub and Cla
 9. [Common Questions](#9-common-questions)
 10. [Understanding @Mentions: GitHub vs GitHub Actions](#10-understanding-mentions-github-vs-github-actions)
 11. [Deep Dive: Complete Workflow Trace](#11-deep-dive-complete-workflow-trace)
+12. [Using Claude Code Action from Claude Code CLI](#12-using-claude-code-action-from-claude-code-cli)
 
 ---
 
@@ -921,6 +922,239 @@ Understanding the complete system requires recognizing four distinct players:
 4. **Anthropic API (AI)** - Receives requests, runs Claude, returns intelligent responses
 
 The action is essentially a **bridge** that translates GitHub events into Claude API calls and Claude's responses back into GitHub actions (comments, PRs, etc.).
+
+---
+
+## 12. Using Claude Code Action from Claude Code CLI
+
+Once Claude Code Action is set up on your GitHub repository, you can trigger it remotely while working locally in Claude Code CLI. This creates a powerful workflow where you can delegate tasks to Claude on GitHub while continuing your local work.
+
+### The Key Insight
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     YOUR LOCAL MACHINE                          │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │              CLAUDE CODE CLI                             │   │
+│  │                                                          │   │
+│  │  You're working here, and you can use `gh` CLI to:      │   │
+│  │  • Create issues with @claude mentions                   │   │
+│  │  • Comment on PRs with @claude                           │   │
+│  │  • Push branches and trigger auto-reviews               │   │
+│  └─────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              │ gh issue create / gh pr comment
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                         GITHUB                                  │
+│                                                                 │
+│  Issue/Comment created → Webhook fired → Claude Code Action    │
+│                                                                 │
+│  Claude Code Action runs on GitHub's servers, reads your       │
+│  repo, and posts results back                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Prerequisites
+
+Before using this workflow, ensure you have:
+
+1. **Claude Code Action set up** on your GitHub repository (see Section 7)
+2. **GitHub CLI (`gh`) installed** - Install from [cli.github.com](https://cli.github.com)
+3. **Authenticated with GitHub** - Run `gh auth login`
+
+### Example Workflow 1: Request a Remote Bug Fix
+
+**Scenario:** You're working locally and discover a bug in a different part of the codebase. Instead of fixing it yourself, you delegate it to Claude Code Action on GitHub.
+
+**In Claude Code CLI:**
+```bash
+# Create an issue that triggers Claude Code Action
+gh issue create \
+  --title "Fix: Login button not redirecting after authentication" \
+  --body "@claude The login button in src/components/Login.tsx doesn't redirect to /dashboard after successful login. Please fix this bug and create a PR."
+```
+
+**What happens:**
+1. GitHub creates the issue with `@claude` mention
+2. Claude Code Action triggers
+3. Claude reads the codebase, finds the bug, fixes it
+4. Claude creates a branch and PR with the fix
+5. Claude comments on the issue with a link to the PR
+
+**You see (on GitHub):**
+```
+Claude: I've analyzed the issue and found the problem in src/components/Login.tsx.
+        The redirect was missing after the authentication callback.
+
+        I've created PR #47 with the fix: [Link to PR]
+```
+
+### Example Workflow 2: Request Code Review on Your PR
+
+**Scenario:** You've finished implementing a feature locally and want Claude to review it before your teammates do.
+
+**In Claude Code CLI:**
+```bash
+# Push your branch
+git push -u origin feature/user-settings
+
+# Create a PR
+gh pr create \
+  --title "Add user settings page" \
+  --body "Implements user settings with profile editing and preferences."
+
+# Request Claude's review
+gh pr comment 42 --body "@claude Please review this PR for:
+- Security vulnerabilities
+- Performance issues
+- Code quality and best practices
+- Missing edge cases"
+```
+
+**What happens:**
+1. Claude Code Action triggers on the comment
+2. Claude reads all the changed files in the PR
+3. Claude posts a detailed review
+
+**You see:**
+```
+Claude: I've reviewed the changes in this PR. Here's my analysis:
+
+        ## Security Issues 🔴
+        **src/api/settings.ts:23** - User input not sanitized before database query
+
+        ## Performance 🟡
+        **src/components/Settings.tsx:45** - Consider memoizing this expensive computation
+
+        ## Suggestions 🟢
+        - Add loading states for better UX
+        - Consider adding unit tests for the validation logic
+
+        Overall: Good implementation, but please address the security issue before merging.
+```
+
+### Example Workflow 3: Delegate Documentation Writing
+
+**Scenario:** You've implemented a new API endpoint but don't want to write the documentation yourself.
+
+**In Claude Code CLI:**
+```bash
+gh issue create \
+  --title "Write API documentation for /api/v2/users endpoint" \
+  --body "@claude Please write comprehensive API documentation for the new /api/v2/users endpoint in src/api/users.ts. Include:
+- Endpoint description
+- Request/response formats
+- Authentication requirements
+- Example requests with curl
+- Error codes
+
+Add the documentation to docs/api/users.md"
+```
+
+**What happens:**
+1. Claude reads the endpoint code
+2. Claude generates documentation
+3. Claude creates a PR with the new docs file
+
+### Example Workflow 4: Refactor Request
+
+**Scenario:** You notice some technical debt while working locally.
+
+**In Claude Code CLI:**
+```bash
+gh issue create \
+  --title "Refactor: Extract common validation logic" \
+  --body "@claude The validation logic in these files is duplicated:
+- src/api/users.ts (lines 45-67)
+- src/api/orders.ts (lines 23-45)
+- src/api/products.ts (lines 89-111)
+
+Please extract this into a shared utility in src/utils/validation.ts and update all usages."
+```
+
+### Example Workflow 5: Ask Questions About Remote Code
+
+**Scenario:** You're working locally but need to understand code in another part of the repo.
+
+**In Claude Code CLI:**
+```bash
+gh issue create \
+  --title "Question: How does the authentication flow work?" \
+  --body "@claude Can you explain how the authentication flow works in this codebase? Specifically:
+1. How are JWT tokens generated and validated?
+2. Where is the refresh token logic?
+3. How are protected routes secured?"
+```
+
+**Claude responds with a detailed explanation** without making any code changes.
+
+### Example Workflow 6: Fix Failing CI from Local
+
+**Scenario:** You pushed code and CI is failing. Ask Claude to fix it.
+
+**In Claude Code CLI:**
+```bash
+# Check which PR is failing
+gh pr checks 42
+
+# Ask Claude to fix it
+gh pr comment 42 --body "@claude The CI is failing with type errors. Please analyze the failure and fix the issues."
+```
+
+### Quick Reference: Commands to Trigger Claude Code Action
+
+| Task | Command |
+|------|---------|
+| Create issue for Claude | `gh issue create --body "@claude [request]"` |
+| Comment on issue | `gh issue comment 123 --body "@claude [request]"` |
+| Comment on PR | `gh pr comment 42 --body "@claude [request]"` |
+| Request PR review | `gh pr comment 42 --body "@claude review this PR"` |
+
+### Combining Local and Remote Work
+
+Here's a powerful pattern combining both Claude Code CLI and Claude Code Action:
+
+```bash
+# 1. You're working locally on feature A
+#    Meanwhile, you want Claude to work on feature B remotely
+
+# Create an issue for Claude to work on
+gh issue create \
+  --title "Implement dark mode toggle" \
+  --body "@claude Add a dark mode toggle to the settings page.
+         Use the existing theme context in src/contexts/ThemeContext.tsx"
+
+# 2. Continue your local work...
+#    Claude works on the issue in parallel on GitHub
+
+# 3. Later, check Claude's progress
+gh pr list --author="app/claude"
+
+# 4. Review Claude's PR
+gh pr view 48
+
+# 5. If it looks good, merge it
+gh pr merge 48
+
+# 6. Pull the changes into your local branch
+git pull origin main
+```
+
+### Understanding the Two Tools
+
+| Where | What | How |
+|-------|------|-----|
+| **GitHub** | Claude Code Action | Responds to `@claude` mentions, reviews PRs automatically |
+| **Local** | Claude Code CLI | Your interactive AI assistant for local development |
+| **Bridge** | GitHub CLI (`gh`) | Trigger Claude Code Action from your terminal |
+
+**The power combo:**
+- Use **Claude Code CLI** for interactive local work
+- Use **Claude Code Action** (via `gh` commands) for parallel/remote work on GitHub
+- Both can work simultaneously on different parts of your project
 
 ---
 
